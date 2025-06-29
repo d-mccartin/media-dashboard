@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ComposedChart } from 'recharts';
-import { Radio, DollarSign, Award, TrendingUp, ChevronLeft, ChevronRight, Car, Target, Users, Eye, Globe, ShoppingCart, Zap, Settings, Tv, Headphones, Podcast, Share2, Search, Monitor } from 'lucide-react';
-
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
+import { Radio, DollarSign, ChevronLeft, ChevronRight, Car, Target, Users, Eye, Globe, ShoppingCart, Zap, Settings, Tv, Headphones, Podcast, Share2, Search, Monitor } from 'lucide-react';
 const AdvertisingDashboard = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedAudience, setSelectedAudience] = useState('auto_shopper');

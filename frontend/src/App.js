@@ -1,7 +1,73 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import { Radio, DollarSign, ChevronLeft, ChevronRight, Car, Target, Users, Eye, Globe, ShoppingCart, Zap, Settings, Tv, Headphones, Podcast, Share2, Search, Monitor } from 'lucide-react';
+
+// Add this CSS at the top of your component
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  
+  * {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .slide-transition {
+    animation: slideIn 0.4s ease-out;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .hover-scale {
+    transition: all 0.2s ease;
+  }
+  
+  .hover-scale:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .shadow-elegant {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .shadow-elegant-hover:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+`;
+
 const AdvertisingDashboard = () => {
+  // Add style tag to document
+  React.useEffect(() => {
+    const styleTag = document.createElement('style');
+    styleTag.innerHTML = styles;
+    document.head.appendChild(styleTag);
+    return () => document.head.removeChild(styleTag);
+  }, []);
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedAudience, setSelectedAudience] = useState('auto_shopper');
   const [selectedKPIs, setSelectedKPIs] = useState(['conversions']);
@@ -425,47 +491,47 @@ const AdvertisingDashboard = () => {
     const slides = [];
     const channelPerformance = getChannelPerformance(selectedIndustry);
     
-    // Slide 1: Cover Page
+    // Slide 1: Cover Page with enhanced styling
     slides.push({
       title: "Media Planning Analysis Dashboard",
       subtitle: "Industry Benchmarks & Channel Performance",
       content: (
-        <div className="h-full flex flex-col justify-center">
-          <div className="bg-indigo-50 p-8 rounded-lg max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-indigo-800 mb-6">Planning Parameters</h2>
+        <div className="h-full flex flex-col justify-center slide-transition">
+          <div className="glass-effect p-8 rounded-2xl max-w-4xl mx-auto shadow-elegant">
+            <h2 className="text-3xl font-bold gradient-text mb-6">Planning Parameters</h2>
             <div className="space-y-4 text-gray-700">
-              <div>
+              <div className="hover-scale p-4 bg-white rounded-xl shadow-elegant">
                 <h3 className="font-semibold text-lg mb-2">Industry Vertical</h3>
                 <p className="text-gray-600">{industries[selectedIndustry].name}</p>
               </div>
-              <div>
+              <div className="hover-scale p-4 bg-white rounded-xl shadow-elegant">
                 <h3 className="font-semibold text-lg mb-2">Target Audience Profile</h3>
                 <p className="text-gray-600">{audiences[selectedAudience].name}</p>
               </div>
-              <div>
+              <div className="hover-scale p-4 bg-white rounded-xl shadow-elegant">
                 <h3 className="font-semibold text-lg mb-2">Media Channels Under Consideration</h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mt-2">
                   {selectedChannels.map(channel => (
-                    <span key={channel} className="px-3 py-1 bg-white rounded-lg text-sm">
+                    <span key={channel} className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg text-sm font-medium">
                       {mediaChannels[channel].name}
                     </span>
                   ))}
                 </div>
               </div>
-              <div>
+              <div className="hover-scale p-4 bg-white rounded-xl shadow-elegant">
                 <h3 className="font-semibold text-lg mb-2">Campaign Objectives (KPIs)</h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mt-2">
                   {selectedKPIs.map(kpi => {
                     const kpiOption = kpiOptions.find(k => k.id === kpi);
                     return (
-                      <span key={kpi} className="px-3 py-1 bg-indigo-200 rounded-lg text-sm">
+                      <span key={kpi} className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-sm font-medium">
                         {kpiOption ? kpiOption.name : kpi}
                       </span>
                     );
                   })}
                 </div>
               </div>
-              <div className="mt-6 p-4 bg-white rounded-lg">
+              <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
                 <p className="text-sm">
                   This analysis provides industry benchmarks for {industries[selectedIndustry].name} 
                   {' '}campaigns targeting {audiences[selectedAudience].name}, comparing performance 
@@ -481,16 +547,16 @@ const AdvertisingDashboard = () => {
       )
     });
 
-    // Slide 2: Market Penetration & Cost Benchmarks
+    // Slide 2: Market Penetration & Cost Benchmarks with enhanced styling
     slides.push({
       title: "Channel Reach & Cost Efficiency Analysis",
       subtitle: `${industries[selectedIndustry].name} Industry Benchmarks`,
       content: (
-        <div className="h-full grid grid-cols-2 gap-8">
+        <div className="h-full grid grid-cols-2 gap-8 slide-transition">
           <div>
             <h3 className="text-lg font-bold mb-2 text-gray-800">Market Penetration & Reach</h3>
             <p className="text-xs text-gray-600 mb-3">US adult reach potential by channel (Source: Edison Research, Nielsen)</p>
-            <div className="h-72 bg-gray-50 p-4 rounded-lg">
+            <div className="h-72 bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl shadow-elegant">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={selectedChannels.map(channel => ({
                   channel: mediaChannels[channel].name,
@@ -498,13 +564,13 @@ const AdvertisingDashboard = () => {
                   reach: mediaChannels[channel].reach,
                   fill: mediaChannels[channel].color
                 }))}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="channel" angle={-45} textAnchor="end" height={80} />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
                   <Legend />
-                  <Bar dataKey="penetration" name="Market Penetration %" fill="#8884d8" />
-                  <Bar dataKey="reach" name="Max Reach %" fill="#82ca9d" />
+                  <Bar dataKey="penetration" name="Market Penetration %" fill="#6366f1" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="reach" name="Max Reach %" fill="#10b981" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -517,13 +583,15 @@ const AdvertisingDashboard = () => {
                 const Icon = mediaChannels[channel].icon;
                 const perf = channelPerformance[channel];
                 return (
-                  <div key={channel} className="bg-white p-4 rounded-lg border">
+                  <div key={channel} className="bg-white p-4 rounded-xl border border-gray-100 hover-scale shadow-elegant-hover">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
-                        <Icon className="mr-2" size={20} />
+                        <div className="p-2 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg mr-3">
+                          <Icon className="text-indigo-600" size={20} />
+                        </div>
                         <span className="font-semibold">{mediaChannels[channel].name}</span>
                       </div>
-                      <span className="text-lg font-bold">
+                      <span className="text-lg font-bold gradient-text">
                         ${perf.avgCPM || perf.avgCPC || mediaChannels[channel].costRange.min}-
                         {mediaChannels[channel].costRange.max}
                       </span>
@@ -532,8 +600,13 @@ const AdvertisingDashboard = () => {
                       {channel === 'sem_ppc' ? 'CPC' : 'CPM'} • 
                       {' '}Industry avg: ${perf.avgCPM || perf.avgCPC || 'Varies'}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Efficiency Score: {((100 - (perf.avgCPM || perf.avgCPC || 10) / 30 * 100)).toFixed(0)}%
+                    <div className="mt-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full" style={{width: `${((100 - (perf.avgCPM || perf.avgCPC || 10) / 30 * 100))}%`}}></div>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Efficiency Score: {((100 - (perf.avgCPM || perf.avgCPC || 10) / 30 * 100)).toFixed(0)}%
+                      </div>
                     </div>
                   </div>
                 );
@@ -544,22 +617,22 @@ const AdvertisingDashboard = () => {
       )
     });
 
-    // Slide 3: Audience Media Usage
+    // Slide 3: Audience Media Usage with enhanced styling
     slides.push({
       title: `${audiences[selectedAudience].name} Media Consumption`,
       subtitle: "Channel Usage Patterns & Preferences",
       content: (
-        <div className="h-full">
+        <div className="h-full slide-transition">
           <div className="mb-6">
             <h3 className="text-lg font-bold mb-2 text-gray-800">Media Usage by Target Audience (%)</h3>
             <p className="text-xs text-gray-600 mb-3">Percentage of target audience that actively consumes content on each channel weekly</p>
-            <div className="h-56 bg-gray-50 p-4 rounded-lg">
+            <div className="h-56 bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-xl shadow-elegant">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={selectedChannels.map(channel => ({
                   channel: mediaChannels[channel].name,
                   usage: audiences[selectedAudience].mediaUsage[channel]
                 }))}>
-                  <PolarGrid />
+                  <PolarGrid stroke="#e5e7eb" />
                   <PolarAngleAxis dataKey="channel" />
                   <PolarRadiusAxis domain={[0, 100]} />
                   <Radar 
@@ -567,23 +640,23 @@ const AdvertisingDashboard = () => {
                     dataKey="usage" 
                     stroke="#6366f1" 
                     fill="#6366f1" 
-                    fillOpacity={0.4}
+                    fillOpacity={0.6}
                   />
-                  <Tooltip />
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-6">
-            <div className="bg-indigo-50 p-4 rounded-lg">
+            <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-xl shadow-elegant">
               <h4 className="font-bold text-indigo-800 mb-1">High Usage Channels (70%+)</h4>
               <p className="text-xs text-gray-600 mb-3">Channels with strong existing audience engagement</p>
               {selectedChannels
                 .filter(channel => audiences[selectedAudience].mediaUsage[channel] >= 70)
                 .map(channel => (
-                  <div key={channel} className="flex justify-between items-center mb-2 bg-white p-2 rounded">
-                    <span className="text-sm">{mediaChannels[channel].name}</span>
-                    <span className="font-bold text-indigo-700">
+                  <div key={channel} className="flex justify-between items-center mb-2 bg-white p-3 rounded-lg hover-scale shadow">
+                    <span className="text-sm font-medium">{mediaChannels[channel].name}</span>
+                    <span className="font-bold text-indigo-700 text-lg">
                       {audiences[selectedAudience].mediaUsage[channel]}%
                     </span>
                   </div>
@@ -592,15 +665,15 @@ const AdvertisingDashboard = () => {
                 <p className="text-xs text-gray-500 italic">No channels above 70% usage</p>
               )}
             </div>
-            <div className="bg-amber-50 p-4 rounded-lg">
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-xl shadow-elegant">
               <h4 className="font-bold text-amber-800 mb-1">Growth Opportunities (&lt;70%)</h4>
               <p className="text-xs text-gray-600 mb-3">Channels with potential for increased audience penetration</p>
               {selectedChannels
                 .filter(channel => audiences[selectedAudience].mediaUsage[channel] < 70)
                 .map(channel => (
-                  <div key={channel} className="flex justify-between items-center mb-2 bg-white p-2 rounded">
-                    <span className="text-sm">{mediaChannels[channel].name}</span>
-                    <span className="font-bold text-amber-700">
+                  <div key={channel} className="flex justify-between items-center mb-2 bg-white p-3 rounded-lg hover-scale shadow">
+                    <span className="text-sm font-medium">{mediaChannels[channel].name}</span>
+                    <span className="font-bold text-amber-700 text-lg">
                       {audiences[selectedAudience].mediaUsage[channel]}%
                     </span>
                   </div>
@@ -614,30 +687,30 @@ const AdvertisingDashboard = () => {
       )
     });
 
-    // Slide 4: Industry-Specific Performance Metrics
+    // Slide 4: Industry-Specific Performance Metrics with enhanced styling
     slides.push({
       title: `${industries[selectedIndustry].name} Channel Performance Benchmarks`,
       subtitle: "Industry-Specific KPI Performance Data",
       content: (
-        <div className="h-full">
+        <div className="h-full slide-transition">
           <div className="grid grid-cols-2 gap-6 mb-3">
             <div>
               <h3 className="text-lg font-bold mb-1 text-gray-800">Brand Metrics</h3>
               <p className="text-xs text-gray-600 mb-2">Industry benchmarks from Meta IQ & Google</p>
-              <div className="h-56 bg-gray-50 p-4 rounded-lg">
+              <div className="h-56 bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl shadow-elegant">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={selectedChannels.map(channel => ({
                     channel: mediaChannels[channel].name.replace('/', '\n'),
                     awareness: channelPerformance[channel].brandAwareness,
                     recall: channelPerformance[channel].brandRecall
                   }))}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="channel" angle={-45} textAnchor="end" height={60} fontSize={11} />
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
                     <Legend />
-                    <Bar dataKey="awareness" fill="#6366f1" name="Brand Awareness %" />
-                    <Bar dataKey="recall" fill="#10b981" name="Brand Recall %" />
+                    <Bar dataKey="awareness" fill="#6366f1" name="Brand Awareness %" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="recall" fill="#10b981" name="Brand Recall %" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -645,20 +718,20 @@ const AdvertisingDashboard = () => {
             <div>
               <h3 className="text-lg font-bold mb-1 text-gray-800">Performance Metrics</h3>
               <p className="text-xs text-gray-600 mb-2">Conversion & engagement benchmarks</p>
-              <div className="h-56 bg-gray-50 p-4 rounded-lg">
+              <div className="h-56 bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl shadow-elegant">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={selectedChannels.map(channel => ({
                     channel: mediaChannels[channel].name.replace('/', '\n'),
                     conversions: (channelPerformance[channel].conversions * 100),
                     engagement: channelPerformance[channel].engagement
                   }))}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="channel" angle={-45} textAnchor="end" height={60} fontSize={11} />
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
                     <Legend />
-                    <Bar dataKey="conversions" fill="#f97316" name="Conversion Rate %" />
-                    <Bar dataKey="engagement" fill="#a78bfa" name="Engagement %" />
+                    <Bar dataKey="conversions" fill="#f97316" name="Conversion Rate %" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="engagement" fill="#a78bfa" name="Engagement %" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -670,13 +743,13 @@ const AdvertisingDashboard = () => {
             </p>
             <div className="grid grid-cols-4 gap-3">
               {selectedChannels.slice(0, 4).map(channel => (
-                <div key={channel} className="bg-white p-3 rounded-lg border text-center">
-                  <h5 className="font-semibold text-xs mb-2">{mediaChannels[channel].name}</h5>
-                  <div className="text-lg font-bold" style={{color: mediaChannels[channel].color}}>
+                <div key={channel} className="bg-white p-4 rounded-xl border border-gray-100 text-center hover-scale shadow-elegant-hover">
+                  <h5 className="font-semibold text-xs mb-3">{mediaChannels[channel].name}</h5>
+                  <div className="text-2xl font-bold gradient-text">
                     {(channelPerformance[channel].conversions * 100).toFixed(2)}%
                   </div>
                   <div className="text-xs text-gray-600">Avg Conversion</div>
-                  <div className="text-sm font-semibold text-gray-700 mt-1">
+                  <div className="text-lg font-semibold text-gray-700 mt-2">
                     ${channelPerformance[channel].avgCPM || channelPerformance[channel].avgCPC}
                   </div>
                   <div className="text-xs text-gray-600">
@@ -690,35 +763,35 @@ const AdvertisingDashboard = () => {
       )
     });
 
-    // Integrated Approach Benefits Slide
+    // Integrated Approach Benefits Slide with enhanced styling
     slides.push({
       title: "Benefits of Integrated Multi-Channel Approach",
       subtitle: "Synergies and Amplification Effects",
       content: (
-        <div className="h-full">
+        <div className="h-full slide-transition">
           <div className="mb-5">
             <h3 className="text-lg font-bold mb-2 text-gray-800">Multi-Channel Integration Benefits</h3>
             <p className="text-xs text-gray-600 mb-4">How combining channels creates multiplicative effects beyond individual channel performance</p>
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-indigo-50 p-5 rounded-lg">
+              <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-xl shadow-elegant">
                 <h4 className="font-bold text-indigo-800 mb-3">Cross-Channel Amplification</h4>
-                <div className="space-y-2">
-                  <div className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-indigo-600 mr-2 mt-1"></div>
+                <div className="space-y-3">
+                  <div className="flex items-start hover-scale">
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-3 mt-1"></div>
                     <div>
                       <p className="text-sm font-semibold">Reach Extension</p>
                       <p className="text-xs text-gray-600">Combined channels reach {Math.min(95, Math.max(...selectedChannels.map(c => mediaChannels[c].reach)) + (selectedChannels.length * 3))}% of target audience vs individual channel max of {Math.max(...selectedChannels.map(c => mediaChannels[c].reach))}%</p>
                     </div>
                   </div>
-                  <div className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-indigo-600 mr-2 mt-1"></div>
+                  <div className="flex items-start hover-scale">
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-3 mt-1"></div>
                     <div>
                       <p className="text-sm font-semibold">Frequency Optimization</p>
                       <p className="text-xs text-gray-600">Multi-channel presence increases message frequency by 2.8x without oversaturation</p>
                     </div>
                   </div>
-                  <div className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-indigo-600 mr-2 mt-1"></div>
+                  <div className="flex items-start hover-scale">
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-3 mt-1"></div>
                     <div>
                       <p className="text-sm font-semibold">Message Reinforcement</p>
                       <p className="text-xs text-gray-600">Cross-channel messaging improves brand recall by additional 28%</p>
@@ -727,30 +800,30 @@ const AdvertisingDashboard = () => {
                 </div>
               </div>
               
-              <div className="bg-green-50 p-5 rounded-lg">
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-xl shadow-elegant">
                 <h4 className="font-bold text-green-800 mb-3">Performance Improvements</h4>
                 <p className="text-xs text-gray-600 mb-2">KPI-specific benefits from integrated approach</p>
                 <div className="space-y-2">
                   {selectedKPIs.includes('conversions') && (
-                    <div className="bg-white p-2 rounded">
+                    <div className="bg-white p-3 rounded-lg hover-scale shadow">
                       <p className="text-sm font-semibold text-green-700">Conversion Lift</p>
                       <p className="text-xs text-gray-600">Multi-touch attribution shows 35% higher conversion rate when using {selectedChannels.length} channels vs single channel</p>
                     </div>
                   )}
                   {selectedKPIs.includes('brand_awareness') && (
-                    <div className="bg-white p-2 rounded">
+                    <div className="bg-white p-3 rounded-lg hover-scale shadow">
                       <p className="text-sm font-semibold text-green-700">Brand Awareness Boost</p>
                       <p className="text-xs text-gray-600">Integrated campaigns achieve 42% higher unaided brand awareness</p>
                     </div>
                   )}
                   {selectedKPIs.includes('website_traffic') && (
-                    <div className="bg-white p-2 rounded">
+                    <div className="bg-white p-3 rounded-lg hover-scale shadow">
                       <p className="text-sm font-semibold text-green-700">Traffic Quality</p>
                       <p className="text-xs text-gray-600">Multi-channel visitors show 65% longer session duration and 48% lower bounce rate</p>
                     </div>
                   )}
                   {selectedKPIs.includes('incremental_reach') && (
-                    <div className="bg-white p-2 rounded">
+                    <div className="bg-white p-3 rounded-lg hover-scale shadow">
                       <p className="text-sm font-semibold text-green-700">Audience Expansion</p>
                       <p className="text-xs text-gray-600">Channel overlap analysis shows {15 + (selectedChannels.length * 5)}% incremental unique reach</p>
                     </div>
@@ -760,26 +833,26 @@ const AdvertisingDashboard = () => {
             </div>
           </div>
           
-          <div className="bg-amber-50 p-5 rounded-lg">
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-xl shadow-elegant">
             <h4 className="font-bold text-amber-800 mb-3">Cost Efficiency Benefits</h4>
             <p className="text-xs text-gray-600 mb-3">Financial advantages of coordinated multi-channel campaigns</p>
             <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="bg-white p-3 rounded">
-                <div className="text-2xl font-bold text-amber-700">
+              <div className="bg-white p-4 rounded-xl hover-scale shadow-elegant-hover">
+                <div className="text-3xl font-bold gradient-text">
                   {(100 - (selectedChannels.reduce((acc, c) => acc + (channelPerformance[c].avgCPM || channelPerformance[c].avgCPC || 10), 0) / selectedChannels.length / 15 * 100)).toFixed(0)}%
                 </div>
                 <p className="text-xs text-gray-600 mt-1">Lower Effective CPM</p>
                 <p className="text-xs text-gray-500 mt-1">vs single channel avg</p>
               </div>
-              <div className="bg-white p-3 rounded">
-                <div className="text-2xl font-bold text-amber-700">
+              <div className="bg-white p-4 rounded-xl hover-scale shadow-elegant-hover">
+                <div className="text-3xl font-bold gradient-text">
                   {(selectedChannels.reduce((acc, c) => acc + channelPerformance[c].conversions, 0) * 25).toFixed(0)}%
                 </div>
                 <p className="text-xs text-gray-600 mt-1">Better ROI</p>
                 <p className="text-xs text-gray-500 mt-1">through optimization</p>
               </div>
-              <div className="bg-white p-3 rounded">
-                <div className="text-2xl font-bold text-amber-700">
+              <div className="bg-white p-4 rounded-xl hover-scale shadow-elegant-hover">
+                <div className="text-3xl font-bold gradient-text">
                   {18 + selectedChannels.length * 2}%
                 </div>
                 <p className="text-xs text-gray-600 mt-1">Budget Optimization</p>
@@ -791,18 +864,18 @@ const AdvertisingDashboard = () => {
       )
     });
 
-    // Executive Summary
+    // Executive Summary with enhanced styling
     slides.push({
       title: "Executive Summary & Recommendations",
       subtitle: "Strategic Insights for Campaign Optimization",
       content: (
-        <div className="h-full">
+        <div className="h-full slide-transition">
           <div className="grid grid-cols-2 gap-8 mb-6">
             <div>
               <h3 className="text-xl font-bold mb-2 text-gray-800">Key Performance Highlights</h3>
               <p className="text-xs text-gray-600 mb-3">Summary of top-performing channels and metrics</p>
               <div className="space-y-3">
-                <div className="bg-indigo-100 p-4 rounded-lg">
+                <div className="bg-gradient-to-br from-indigo-100 to-blue-100 p-4 rounded-xl hover-scale shadow-elegant">
                   <h4 className="font-semibold text-indigo-800 mb-2">Best Performing Channel</h4>
                   <p className="text-sm">
                     {(() => {
@@ -815,7 +888,7 @@ const AdvertisingDashboard = () => {
                   </p>
                   <p className="text-xs text-gray-600 mt-1">Highest percentage of audience taking desired action</p>
                 </div>
-                <div className="bg-green-100 p-4 rounded-lg">
+                <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-4 rounded-xl hover-scale shadow-elegant">
                   <h4 className="font-semibold text-green-800 mb-2">Audience Alignment</h4>
                   <p className="text-sm">
                     {(() => {
@@ -833,9 +906,9 @@ const AdvertisingDashboard = () => {
               <h3 className="text-xl font-bold mb-4 text-gray-800">Strategic Recommendations</h3>
               <div className="space-y-3">
                 {selectedChannels.slice(0, 3).map((channel, index) => (
-                  <div key={channel} className="bg-gray-100 p-3 rounded-lg">
+                  <div key={channel} className="bg-gradient-to-r from-gray-100 to-gray-50 p-4 rounded-xl hover-scale shadow-elegant">
                     <div className="font-bold text-gray-800 mb-1">
-                      {index + 1}. {mediaChannels[channel].name} Strategy
+                      <span className="text-2xl gradient-text mr-2">{index + 1}.</span> {mediaChannels[channel].name} Strategy
                     </div>
                     <p className="text-xs text-gray-600">
                       Leverage {channelPerformance[channel].brandRecall}% recall rate with targeted messaging
@@ -845,23 +918,23 @@ const AdvertisingDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="bg-indigo-600 text-white p-6 rounded-lg">
+          <div className="gradient-bg text-white p-6 rounded-2xl shadow-elegant">
             <div className="grid grid-cols-3 gap-8 text-center">
-              <div>
+              <div className="hover-scale">
                 <h4 className="text-lg font-bold mb-2">Optimal Channel Mix</h4>
-                <div className="text-3xl font-bold">{selectedChannels.length}</div>
+                <div className="text-4xl font-bold">{selectedChannels.length}</div>
                 <div className="text-sm opacity-90">Channels Selected</div>
               </div>
-              <div>
+              <div className="hover-scale">
                 <h4 className="text-lg font-bold mb-2">Audience Coverage</h4>
-                <div className="text-3xl font-bold">
+                <div className="text-4xl font-bold">
                   {Math.max(...selectedChannels.map(c => mediaChannels[c].reach))}%
                 </div>
                 <div className="text-sm opacity-90">Maximum Reach</div>
               </div>
-              <div>
+              <div className="hover-scale">
                 <h4 className="text-lg font-bold mb-2">Efficiency Score</h4>
-                <div className="text-3xl font-bold">
+                <div className="text-4xl font-bold">
                   {(selectedChannels.reduce((acc, c) => acc + channelPerformance[c].conversions * 100, 0) / selectedChannels.length).toFixed(1)}
                 </div>
                 <div className="text-sm opacity-90">Avg Conversion %</div>
@@ -872,53 +945,53 @@ const AdvertisingDashboard = () => {
       )
     });
 
-    // Sources Slide
+    // Sources Slide with enhanced styling
     slides.push({
       title: "Data Sources & Methodology",
       subtitle: "Free & Public Data Sources Used",
       content: (
-        <div className="h-full">
-          <div className="bg-gray-50 p-6 rounded-lg mb-6">
+        <div className="h-full slide-transition">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl mb-6 shadow-elegant">
             <h3 className="text-lg font-bold mb-4 text-gray-800">Primary Data Sources (Free Access)</h3>
             <div className="grid grid-cols-2 gap-6">
-              <div>
+              <div className="hover-scale">
                 <h4 className="font-semibold text-gray-700 mb-3">Industry Benchmarks</h4>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-start">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2 mt-1.5"></div>
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-2 mt-1.5"></div>
                     <span><strong>Google Ads Benchmarks</strong> - Think with Google (Free)</span>
                   </li>
                   <li className="flex items-start">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2 mt-1.5"></div>
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-2 mt-1.5"></div>
                     <span><strong>Meta Business IQ</strong> - Facebook Insights (Free)</span>
                   </li>
                   <li className="flex items-start">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2 mt-1.5"></div>
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-2 mt-1.5"></div>
                     <span><strong>LinkedIn B2B Institute</strong> - Marketing Reports (Free)</span>
                   </li>
                   <li className="flex items-start">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2 mt-1.5"></div>
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-2 mt-1.5"></div>
                     <span><strong>IAB Benchmark Reports</strong> - Quarterly Updates (Free)</span>
                   </li>
                 </ul>
               </div>
-              <div>
+              <div className="hover-scale">
                 <h4 className="font-semibold text-gray-700 mb-3">Media Consumption Data</h4>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-start">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2 mt-1.5"></div>
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-2 mt-1.5"></div>
                     <span><strong>Edison Research</strong> - Share of Ear & Infinite Dial (Free)</span>
                   </li>
                   <li className="flex items-start">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2 mt-1.5"></div>
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-2 mt-1.5"></div>
                     <span><strong>Pew Research Center</strong> - Media & Tech Reports (API)</span>
                   </li>
                   <li className="flex items-start">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2 mt-1.5"></div>
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-2 mt-1.5"></div>
                     <span><strong>Nielsen</strong> - Total Audience Reports (Free Summaries)</span>
                   </li>
                   <li className="flex items-start">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2 mt-1.5"></div>
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-2 mt-1.5"></div>
                     <span><strong>FCC Public Files</strong> - Broadcast Data (API)</span>
                   </li>
                 </ul>
@@ -926,10 +999,10 @@ const AdvertisingDashboard = () => {
             </div>
           </div>
           
-          <div className="bg-indigo-50 p-6 rounded-lg">
+          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-xl shadow-elegant">
             <h3 className="text-lg font-bold mb-4 text-gray-800">Update Schedule & Methodology</h3>
             <div className="grid grid-cols-3 gap-6 text-sm">
-              <div>
+              <div className="hover-scale">
                 <h4 className="font-semibold text-gray-700 mb-2">Update Frequency</h4>
                 <ul className="text-gray-600 space-y-1">
                   <li>• Google/Meta: Monthly</li>
@@ -938,11 +1011,11 @@ const AdvertisingDashboard = () => {
                   <li>• Pew Research: Bi-annual</li>
                 </ul>
               </div>
-              <div>
+              <div className="hover-scale">
                 <h4 className="font-semibold text-gray-700 mb-2">Data Aggregation</h4>
                 <p className="text-gray-600">Benchmarks represent median performance across 1,000+ campaigns per vertical, normalized for market conditions</p>
               </div>
-              <div>
+              <div className="hover-scale">
                 <h4 className="font-semibold text-gray-700 mb-2">Accessing Updates</h4>
                 <p className="text-gray-600">All sources provide free access via web portals, APIs, or downloadable reports with registration</p>
               </div>
@@ -999,18 +1072,20 @@ const AdvertisingDashboard = () => {
   };
 
   return (
-    <div className="bg-gray-900 p-8 min-h-screen flex flex-col items-center justify-center">
-      {/* Configuration Panel */}
+    <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-8 min-h-screen flex flex-col items-center justify-center">
+      {/* Configuration Panel with enhanced styling */}
       {isConfigOpen && (
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6 w-full max-w-7xl">
+        <div className="glass-effect rounded-2xl shadow-elegant p-6 mb-6 w-full max-w-7xl slide-transition">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-800 flex items-center">
-              <Settings className="mr-2" size={24} />
+              <div className="p-2 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg mr-3">
+                <Settings className="text-indigo-600" size={24} />
+              </div>
               Media Planning Configuration
             </h2>
             <button
               onClick={() => setIsConfigOpen(false)}
-              className="text-gray-500 hover:text-gray-700 text-2xl"
+              className="text-gray-500 hover:text-gray-700 text-2xl hover-scale"
             >
               ×
             </button>
@@ -1029,10 +1104,10 @@ const AdvertisingDashboard = () => {
                         setSelectedIndustry(key);
                         setCurrentSlide(0);
                       }}
-                      className={`w-full p-3 rounded-lg border-2 transition-all flex items-center text-sm ${
+                      className={`w-full p-3 rounded-xl border-2 transition-all flex items-center text-sm hover-scale ${
                         selectedIndustry === key
-                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-indigo-600 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 shadow-elegant'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
                       <Icon size={18} className="mr-2 flex-shrink-0" />
@@ -1055,10 +1130,10 @@ const AdvertisingDashboard = () => {
                         setSelectedAudience(key);
                         setCurrentSlide(0);
                       }}
-                      className={`w-full p-3 rounded-lg border-2 transition-all flex items-center text-sm ${
+                      className={`w-full p-3 rounded-xl border-2 transition-all flex items-center text-sm hover-scale ${
                         selectedAudience === key
-                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-indigo-600 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 shadow-elegant'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
                       <Icon size={18} className="mr-2 flex-shrink-0" />
@@ -1077,10 +1152,10 @@ const AdvertisingDashboard = () => {
                   return (
                     <label
                       key={key}
-                      className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all hover-scale ${
                         selectedChannels.includes(key)
-                          ? 'border-indigo-600 bg-indigo-50'
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-indigo-600 bg-gradient-to-r from-indigo-50 to-purple-50 shadow-elegant'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
                       <input
@@ -1110,10 +1185,10 @@ const AdvertisingDashboard = () => {
                   return (
                     <label
                       key={kpi.id}
-                      className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all hover-scale ${
                         selectedKPIs.includes(kpi.id)
-                          ? 'border-indigo-600 bg-indigo-50'
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-indigo-600 bg-gradient-to-r from-indigo-50 to-purple-50 shadow-elegant'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
                       <input
@@ -1139,7 +1214,7 @@ const AdvertisingDashboard = () => {
             </p>
             <button
               onClick={() => setIsConfigOpen(false)}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              className="px-6 py-2 gradient-bg text-white rounded-xl hover:opacity-90 transition-opacity shadow-elegant hover-scale"
             >
               Generate Analysis
             </button>
@@ -1147,19 +1222,19 @@ const AdvertisingDashboard = () => {
         </div>
       )}
 
-      {/* Main Presentation */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden" style={{ aspectRatio: '16/9', maxHeight: '85vh', width: '100%', maxWidth: '1400px' }}>
-        {/* Header */}
-        <div className="bg-indigo-600 text-white p-5">
+      {/* Main Presentation with enhanced styling */}
+      <div className="bg-white rounded-2xl shadow-elegant overflow-hidden" style={{ aspectRatio: '16/9', maxHeight: '85vh', width: '100%', maxWidth: '1400px' }}>
+        {/* Header with gradient */}
+        <div className="gradient-bg text-white p-5">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold">{slides[currentSlide].title}</h1>
-              <p className="text-indigo-200 text-sm mt-1">{slides[currentSlide].subtitle}</p>
+              <p className="text-white/80 text-sm mt-1">{slides[currentSlide].subtitle}</p>
             </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setIsConfigOpen(!isConfigOpen)}
-                className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
+                className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors hover-scale"
                 title="Configuration"
               >
                 <Settings size={20} />
@@ -1180,12 +1255,12 @@ const AdvertisingDashboard = () => {
           {slides[currentSlide].content}
         </div>
 
-        {/* Navigation */}
-        <div className="bg-gray-100 p-4 flex justify-between items-center border-t">
+        {/* Navigation with enhanced styling */}
+        <div className="bg-gradient-to-t from-gray-100 to-gray-50 p-4 flex justify-between items-center border-t">
           <button 
             onClick={prevSlide}
             disabled={currentSlide === 0}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors"
+            className="flex items-center px-4 py-2 gradient-bg text-white rounded-xl disabled:bg-gray-400 disabled:cursor-not-allowed hover:opacity-90 transition-all shadow hover-scale"
           >
             <ChevronLeft size={18} className="mr-1" />
             Previous
@@ -1196,9 +1271,9 @@ const AdvertisingDashboard = () => {
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`transition-all duration-300 ${
+                className={`transition-all duration-300 hover-scale ${
                   currentSlide === index 
-                    ? 'w-8 h-3 bg-indigo-600 rounded-full' 
+                    ? 'w-8 h-3 gradient-bg rounded-full shadow' 
                     : 'w-3 h-3 bg-gray-400 rounded-full hover:bg-gray-500'
                 }`}
               />
@@ -1208,15 +1283,15 @@ const AdvertisingDashboard = () => {
           <button 
             onClick={nextSlide}
             disabled={currentSlide === slides.length - 1}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors"
+            className="flex items-center px-4 py-2 gradient-bg text-white rounded-xl disabled:bg-gray-400 disabled:cursor-not-allowed hover:opacity-90 transition-all shadow hover-scale"
           >
             Next
             <ChevronRight size={18} className="ml-1" />
           </button>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-3 text-xs text-gray-500 bg-gray-50 border-t">
+        {/* Footer with enhanced styling */}
+        <div className="px-6 py-3 text-xs text-gray-500 bg-gradient-to-t from-gray-100 to-gray-50 border-t">
           <p>
             <span className="font-semibold">Planning Parameters:</span> {industries[selectedIndustry].name} • {audiences[selectedAudience].name} • 
             {selectedChannels.length} Channel{selectedChannels.length > 1 ? 's' : ''} • 

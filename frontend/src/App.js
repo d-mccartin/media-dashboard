@@ -622,7 +622,7 @@ const AdvertisingDashboard = () => {
                   across selected media channels.
                 </p>
                 <p className="text-xs text-gray-500 mt-2">
-                  {apiData ? 'Live data from API' : 'Using demo data'} • Updated {new Date().toLocaleDateString()}
+                  {apiData?.industries?.length > 0 ? 'Live data from API' : 'Using demo data'} • Updated {new Date().toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -1389,7 +1389,7 @@ const AdvertisingDashboard = () => {
             {selectedChannels.length} Channel{selectedChannels.length > 1 ? 's' : ''} • 
             {selectedKPIs.length} KPI{selectedKPIs.length > 1 ? 's' : ''}
           </p>
-          <p className="text-gray-400 mt-1">Agency Planning Mode • {apiData ? 'Live Data' : 'Demo Mode'}</p>
+          <p className="text-gray-400 mt-1">Agency Planning Mode • {apiData?.industries?.length > 0 ? 'Live Data' : 'Demo Mode'}</p>
         </div>
       </div>
     </div>

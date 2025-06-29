@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import { Radio, DollarSign, ChevronLeft, ChevronRight, Car, Target, Users, Eye, Globe, ShoppingCart, Zap, Settings, Tv, Headphones, Podcast, Share2, Search, Monitor } from 'lucide-react';
 
@@ -60,6 +60,11 @@ const styles = `
 `;
 
 const AdvertisingDashboard = () => {
+  // API integration state
+  const [loading, setLoading] = useState(true);
+  const [apiData, setApiData] = useState(null);
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
   // Add style tag to document
   React.useEffect(() => {
     const styleTag = document.createElement('style');
@@ -68,15 +73,31 @@ const AdvertisingDashboard = () => {
     return () => document.head.removeChild(styleTag);
   }, []);
 
+  // Original state variables
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedAudience, setSelectedAudience] = useState('auto_shopper');
   const [selectedKPIs, setSelectedKPIs] = useState(['conversions']);
   const [selectedChannels, setSelectedChannels] = useState(['streaming_audio']);
   const [selectedIndustry, setSelectedIndustry] = useState('automotive');
   const [isConfigOpen, setIsConfigOpen] = useState(true);
-  
-  // Industry configurations
-  const industries = {
+
+  // Fetch data from API
+  useEffect(() => {
+    fetch(`${API_URL}/api/dashboard-data`)
+      .then(res => res.json())
+      .then(data => {
+        console.log('API Data:', data);
+        setApiData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('API Error:', err);
+        setLoading(false);
+      });
+  }, [API_URL]);
+
+  // Default data (fallback if API fails)
+  const defaultIndustries = {
     automotive: {
       name: 'Automotive',
       icon: Car,
@@ -103,9 +124,8 @@ const AdvertisingDashboard = () => {
       description: 'Residential & Commercial'
     }
   };
-  
-  // Media channel configurations
-  const mediaChannels = {
+
+  const defaultMediaChannels = {
     traditional_radio: {
       name: 'Traditional Radio',
       description: 'Broadcast AM/FM Radio',
@@ -180,8 +200,7 @@ const AdvertisingDashboard = () => {
     }
   };
 
-  // Audience configurations
-  const audiences = {
+  const defaultAudiences = {
     auto_shopper: {
       name: 'Auto Shopper',
       icon: Car,
@@ -324,9 +343,53 @@ const AdvertisingDashboard = () => {
     }
   };
 
+  // Process API data or use defaults
+  const industries = apiData?.industries?.length > 0 
+    ? apiData.industries.reduce((acc, ind) => {
+        acc[ind.id] = { 
+          name: ind.name, 
+          icon: defaultIndustries[ind.id]?.icon || Car, 
+          description: ind.description 
+        };
+        return acc;
+      }, {})
+    : defaultIndustries;
+
+  const mediaChannels = apiData?.channels?.length > 0
+    ? apiData.channels.reduce((acc, ch) => {
+        acc[ch.id] = {
+          ...defaultMediaChannels[ch.id],
+          name: ch.name,
+          description: ch.description,
+          penetration: ch.penetration,
+          reach: ch.reach,
+          color: ch.color
+        };
+        return acc;
+      }, {})
+    : defaultMediaChannels;
+
+  const audiences = apiData?.audiences?.length > 0
+    ? apiData.audiences.reduce((acc, aud) => {
+        const usage = apiData.usage
+          ?.filter(u => u.audience_id === aud.id)
+          ?.reduce((usageAcc, u) => {
+            usageAcc[u.channel_id] = u.usage_percentage;
+            return usageAcc;
+          }, {});
+        
+        acc[aud.id] = {
+          name: aud.name,
+          icon: defaultAudiences[aud.id]?.icon || Users,
+          mediaUsage: usage || defaultAudiences[aud.id]?.mediaUsage || {}
+        };
+        return acc;
+      }, {})
+    : defaultAudiences;
+
   // Channel performance metrics by industry
   const getChannelPerformance = (industry) => {
-    const benchmarks = {
+    const defaultBenchmarks = {
       automotive: {
         traditional_radio: {
           brandAwareness: 68,
@@ -476,8 +539,29 @@ const AdvertisingDashboard = () => {
         }
       }
     };
+
+    // If API has performance data, merge it with defaults
+    if (apiData?.performance?.length > 0) {
+      const apiPerformance = {};
+      apiData.performance
+        .filter(p => p.industry_id === industry)
+        .forEach(p => {
+          apiPerformance[p.channel_id] = {
+            brandAwareness: p.brand_awareness || defaultBenchmarks[industry]?.[p.channel_id]?.brandAwareness || 50,
+            brandRecall: p.brand_recall || defaultBenchmarks[industry]?.[p.channel_id]?.brandRecall || 50,
+            engagement: p.engagement || defaultBenchmarks[industry]?.[p.channel_id]?.engagement || 50,
+            conversions: p.conversions || defaultBenchmarks[industry]?.[p.channel_id]?.conversions || 0.1,
+            avgCPM: p.avg_cpm || defaultBenchmarks[industry]?.[p.channel_id]?.avgCPM || 10,
+            avgCPC: p.avg_cpc || defaultBenchmarks[industry]?.[p.channel_id]?.avgCPC,
+            purchaseIntent: p.purchase_intent || defaultBenchmarks[industry]?.[p.channel_id]?.purchaseIntent || 50,
+            leadGeneration: p.lead_generation || defaultBenchmarks[industry]?.[p.channel_id]?.leadGeneration || 50
+          };
+        });
+      
+      return { ...defaultBenchmarks[industry], ...apiPerformance };
+    }
     
-    return benchmarks[industry] || benchmarks.automotive;
+    return defaultBenchmarks[industry] || defaultBenchmarks.automotive;
   };
 
   const kpiOptions = [
@@ -502,18 +586,18 @@ const AdvertisingDashboard = () => {
             <div className="space-y-4 text-gray-700">
               <div className="hover-scale p-4 bg-white rounded-xl shadow-elegant">
                 <h3 className="font-semibold text-lg mb-2">Industry Vertical</h3>
-                <p className="text-gray-600">{industries[selectedIndustry].name}</p>
+                <p className="text-gray-600">{industries[selectedIndustry]?.name || 'Automotive'}</p>
               </div>
               <div className="hover-scale p-4 bg-white rounded-xl shadow-elegant">
                 <h3 className="font-semibold text-lg mb-2">Target Audience Profile</h3>
-                <p className="text-gray-600">{audiences[selectedAudience].name}</p>
+                <p className="text-gray-600">{audiences[selectedAudience]?.name || 'Auto Shopper'}</p>
               </div>
               <div className="hover-scale p-4 bg-white rounded-xl shadow-elegant">
                 <h3 className="font-semibold text-lg mb-2">Media Channels Under Consideration</h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {selectedChannels.map(channel => (
                     <span key={channel} className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg text-sm font-medium">
-                      {mediaChannels[channel].name}
+                      {mediaChannels[channel]?.name || channel}
                     </span>
                   ))}
                 </div>
@@ -533,12 +617,12 @@ const AdvertisingDashboard = () => {
               </div>
               <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
                 <p className="text-sm">
-                  This analysis provides industry benchmarks for {industries[selectedIndustry].name} 
-                  {' '}campaigns targeting {audiences[selectedAudience].name}, comparing performance 
+                  This analysis provides industry benchmarks for {industries[selectedIndustry]?.name || 'selected'} 
+                  {' '}campaigns targeting {audiences[selectedAudience]?.name || 'selected audience'}, comparing performance 
                   across selected media channels.
                 </p>
                 <p className="text-xs text-gray-500 mt-2">
-                  Data aggregated from: Google Ads Benchmarks, Meta Business IQ, IAB Reports, Edison Research
+                  {apiData ? 'Live data from API' : 'Using demo data'} • Updated {new Date().toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -550,7 +634,7 @@ const AdvertisingDashboard = () => {
     // Slide 2: Market Penetration & Cost Benchmarks with enhanced styling
     slides.push({
       title: "Channel Reach & Cost Efficiency Analysis",
-      subtitle: `${industries[selectedIndustry].name} Industry Benchmarks`,
+      subtitle: `${industries[selectedIndustry]?.name || 'Industry'} Benchmarks`,
       content: (
         <div className="h-full grid grid-cols-2 gap-8 slide-transition">
           <div>
@@ -559,10 +643,10 @@ const AdvertisingDashboard = () => {
             <div className="h-72 bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl shadow-elegant">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={selectedChannels.map(channel => ({
-                  channel: mediaChannels[channel].name,
-                  penetration: mediaChannels[channel].penetration,
-                  reach: mediaChannels[channel].reach,
-                  fill: mediaChannels[channel].color
+                  channel: mediaChannels[channel]?.name || channel,
+                  penetration: mediaChannels[channel]?.penetration || 50,
+                  reach: mediaChannels[channel]?.reach || 60,
+                  fill: mediaChannels[channel]?.color || '#6366f1'
                 }))}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="channel" angle={-45} textAnchor="end" height={80} />
@@ -577,11 +661,11 @@ const AdvertisingDashboard = () => {
           </div>
           <div>
             <h3 className="text-lg font-bold mb-2 text-gray-800">Cost Benchmarks by Channel</h3>
-            <p className="text-xs text-gray-600 mb-3">Average CPM/CPC ranges for {industries[selectedIndustry].name}</p>
+            <p className="text-xs text-gray-600 mb-3">Average CPM/CPC ranges for {industries[selectedIndustry]?.name || 'Industry'}</p>
             <div className="space-y-3 max-h-80 overflow-y-auto">
               {selectedChannels.map(channel => {
-                const Icon = mediaChannels[channel].icon;
-                const perf = channelPerformance[channel];
+                const Icon = mediaChannels[channel]?.icon || Radio;
+                const perf = channelPerformance[channel] || {};
                 return (
                   <div key={channel} className="bg-white p-4 rounded-xl border border-gray-100 hover-scale shadow-elegant-hover">
                     <div className="flex items-center justify-between mb-2">
@@ -589,11 +673,10 @@ const AdvertisingDashboard = () => {
                         <div className="p-2 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg mr-3">
                           <Icon className="text-indigo-600" size={20} />
                         </div>
-                        <span className="font-semibold">{mediaChannels[channel].name}</span>
+                        <span className="font-semibold">{mediaChannels[channel]?.name || channel}</span>
                       </div>
                       <span className="text-lg font-bold gradient-text">
-                        ${perf.avgCPM || perf.avgCPC || mediaChannels[channel].costRange.min}-
-                        {mediaChannels[channel].costRange.max}
+                        ${perf.avgCPM || perf.avgCPC || '10-50'}
                       </span>
                     </div>
                     <div className="text-xs text-gray-600">
@@ -619,7 +702,7 @@ const AdvertisingDashboard = () => {
 
     // Slide 3: Audience Media Usage with enhanced styling
     slides.push({
-      title: `${audiences[selectedAudience].name} Media Consumption`,
+      title: `${audiences[selectedAudience]?.name || 'Audience'} Media Consumption`,
       subtitle: "Channel Usage Patterns & Preferences",
       content: (
         <div className="h-full slide-transition">
@@ -629,14 +712,14 @@ const AdvertisingDashboard = () => {
             <div className="h-56 bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-xl shadow-elegant">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={selectedChannels.map(channel => ({
-                  channel: mediaChannels[channel].name,
-                  usage: audiences[selectedAudience].mediaUsage[channel]
+                  channel: mediaChannels[channel]?.name || channel,
+                  usage: audiences[selectedAudience]?.mediaUsage?.[channel] || 50
                 }))}>
                   <PolarGrid stroke="#e5e7eb" />
                   <PolarAngleAxis dataKey="channel" />
                   <PolarRadiusAxis domain={[0, 100]} />
                   <Radar 
-                    name={audiences[selectedAudience].name} 
+                    name={audiences[selectedAudience]?.name || 'Audience'} 
                     dataKey="usage" 
                     stroke="#6366f1" 
                     fill="#6366f1" 
@@ -652,16 +735,16 @@ const AdvertisingDashboard = () => {
               <h4 className="font-bold text-indigo-800 mb-1">High Usage Channels (70%+)</h4>
               <p className="text-xs text-gray-600 mb-3">Channels with strong existing audience engagement</p>
               {selectedChannels
-                .filter(channel => audiences[selectedAudience].mediaUsage[channel] >= 70)
+                .filter(channel => (audiences[selectedAudience]?.mediaUsage?.[channel] || 0) >= 70)
                 .map(channel => (
                   <div key={channel} className="flex justify-between items-center mb-2 bg-white p-3 rounded-lg hover-scale shadow">
-                    <span className="text-sm font-medium">{mediaChannels[channel].name}</span>
+                    <span className="text-sm font-medium">{mediaChannels[channel]?.name || channel}</span>
                     <span className="font-bold text-indigo-700 text-lg">
-                      {audiences[selectedAudience].mediaUsage[channel]}%
+                      {audiences[selectedAudience]?.mediaUsage?.[channel] || 0}%
                     </span>
                   </div>
                 ))}
-              {selectedChannels.filter(channel => audiences[selectedAudience].mediaUsage[channel] >= 70).length === 0 && (
+              {selectedChannels.filter(channel => (audiences[selectedAudience]?.mediaUsage?.[channel] || 0) >= 70).length === 0 && (
                 <p className="text-xs text-gray-500 italic">No channels above 70% usage</p>
               )}
             </div>
@@ -669,16 +752,16 @@ const AdvertisingDashboard = () => {
               <h4 className="font-bold text-amber-800 mb-1">Growth Opportunities (&lt;70%)</h4>
               <p className="text-xs text-gray-600 mb-3">Channels with potential for increased audience penetration</p>
               {selectedChannels
-                .filter(channel => audiences[selectedAudience].mediaUsage[channel] < 70)
+                .filter(channel => (audiences[selectedAudience]?.mediaUsage?.[channel] || 100) < 70)
                 .map(channel => (
                   <div key={channel} className="flex justify-between items-center mb-2 bg-white p-3 rounded-lg hover-scale shadow">
-                    <span className="text-sm font-medium">{mediaChannels[channel].name}</span>
+                    <span className="text-sm font-medium">{mediaChannels[channel]?.name || channel}</span>
                     <span className="font-bold text-amber-700 text-lg">
-                      {audiences[selectedAudience].mediaUsage[channel]}%
+                      {audiences[selectedAudience]?.mediaUsage?.[channel] || 0}%
                     </span>
                   </div>
                 ))}
-              {selectedChannels.filter(channel => audiences[selectedAudience].mediaUsage[channel] < 70).length === 0 && (
+              {selectedChannels.filter(channel => (audiences[selectedAudience]?.mediaUsage?.[channel] || 100) < 70).length === 0 && (
                 <p className="text-xs text-gray-500 italic">All channels show high usage</p>
               )}
             </div>
@@ -689,7 +772,7 @@ const AdvertisingDashboard = () => {
 
     // Slide 4: Industry-Specific Performance Metrics with enhanced styling
     slides.push({
-      title: `${industries[selectedIndustry].name} Channel Performance Benchmarks`,
+      title: `${industries[selectedIndustry]?.name || 'Industry'} Channel Performance Benchmarks`,
       subtitle: "Industry-Specific KPI Performance Data",
       content: (
         <div className="h-full slide-transition">
@@ -700,9 +783,9 @@ const AdvertisingDashboard = () => {
               <div className="h-56 bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl shadow-elegant">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={selectedChannels.map(channel => ({
-                    channel: mediaChannels[channel].name.replace('/', '\n'),
-                    awareness: channelPerformance[channel].brandAwareness,
-                    recall: channelPerformance[channel].brandRecall
+                    channel: (mediaChannels[channel]?.name || channel).replace('/', '\n'),
+                    awareness: channelPerformance[channel]?.brandAwareness || 50,
+                    recall: channelPerformance[channel]?.brandRecall || 50
                   }))}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="channel" angle={-45} textAnchor="end" height={60} fontSize={11} />
@@ -721,9 +804,9 @@ const AdvertisingDashboard = () => {
               <div className="h-56 bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl shadow-elegant">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={selectedChannels.map(channel => ({
-                    channel: mediaChannels[channel].name.replace('/', '\n'),
-                    conversions: (channelPerformance[channel].conversions * 100),
-                    engagement: channelPerformance[channel].engagement
+                    channel: (mediaChannels[channel]?.name || channel).replace('/', '\n'),
+                    conversions: (channelPerformance[channel]?.conversions || 0.1) * 100,
+                    engagement: channelPerformance[channel]?.engagement || 50
                   }))}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="channel" angle={-45} textAnchor="end" height={60} fontSize={11} />
@@ -739,18 +822,18 @@ const AdvertisingDashboard = () => {
           </div>
           <div>
             <p className="text-xs text-gray-600 mb-2 text-center">
-              {industries[selectedIndustry].name} specific benchmarks • Updated Q4 2024
+              {industries[selectedIndustry]?.name || 'Industry'} specific benchmarks • Updated Q4 2024
             </p>
             <div className="grid grid-cols-4 gap-3">
               {selectedChannels.slice(0, 4).map(channel => (
                 <div key={channel} className="bg-white p-4 rounded-xl border border-gray-100 text-center hover-scale shadow-elegant-hover">
-                  <h5 className="font-semibold text-xs mb-3">{mediaChannels[channel].name}</h5>
+                  <h5 className="font-semibold text-xs mb-3">{mediaChannels[channel]?.name || channel}</h5>
                   <div className="text-2xl font-bold gradient-text">
-                    {(channelPerformance[channel].conversions * 100).toFixed(2)}%
+                    {((channelPerformance[channel]?.conversions || 0.1) * 100).toFixed(2)}%
                   </div>
                   <div className="text-xs text-gray-600">Avg Conversion</div>
                   <div className="text-lg font-semibold text-gray-700 mt-2">
-                    ${channelPerformance[channel].avgCPM || channelPerformance[channel].avgCPC}
+                    ${channelPerformance[channel]?.avgCPM || channelPerformance[channel]?.avgCPC || 10}
                   </div>
                   <div className="text-xs text-gray-600">
                     {channel === 'sem_ppc' ? 'Avg CPC' : 'Avg CPM'}
@@ -780,7 +863,7 @@ const AdvertisingDashboard = () => {
                     <div className="w-3 h-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-3 mt-1"></div>
                     <div>
                       <p className="text-sm font-semibold">Reach Extension</p>
-                      <p className="text-xs text-gray-600">Combined channels reach {Math.min(95, Math.max(...selectedChannels.map(c => mediaChannels[c].reach)) + (selectedChannels.length * 3))}% of target audience vs individual channel max of {Math.max(...selectedChannels.map(c => mediaChannels[c].reach))}%</p>
+                      <p className="text-xs text-gray-600">Combined channels reach {Math.min(95, Math.max(...selectedChannels.map(c => mediaChannels[c]?.reach || 60)) + (selectedChannels.length * 3))}% of target audience vs individual channel max of {Math.max(...selectedChannels.map(c => mediaChannels[c]?.reach || 60))}%</p>
                     </div>
                   </div>
                   <div className="flex items-start hover-scale">
@@ -839,14 +922,14 @@ const AdvertisingDashboard = () => {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="bg-white p-4 rounded-xl hover-scale shadow-elegant-hover">
                 <div className="text-3xl font-bold gradient-text">
-                  {(100 - (selectedChannels.reduce((acc, c) => acc + (channelPerformance[c].avgCPM || channelPerformance[c].avgCPC || 10), 0) / selectedChannels.length / 15 * 100)).toFixed(0)}%
+                  {(100 - (selectedChannels.reduce((acc, c) => acc + (channelPerformance[c]?.avgCPM || channelPerformance[c]?.avgCPC || 10), 0) / selectedChannels.length / 15 * 100)).toFixed(0)}%
                 </div>
                 <p className="text-xs text-gray-600 mt-1">Lower Effective CPM</p>
                 <p className="text-xs text-gray-500 mt-1">vs single channel avg</p>
               </div>
               <div className="bg-white p-4 rounded-xl hover-scale shadow-elegant-hover">
                 <div className="text-3xl font-bold gradient-text">
-                  {(selectedChannels.reduce((acc, c) => acc + channelPerformance[c].conversions, 0) * 25).toFixed(0)}%
+                  {(selectedChannels.reduce((acc, c) => acc + (channelPerformance[c]?.conversions || 0.1), 0) * 25).toFixed(0)}%
                 </div>
                 <p className="text-xs text-gray-600 mt-1">Better ROI</p>
                 <p className="text-xs text-gray-500 mt-1">through optimization</p>
@@ -881,9 +964,9 @@ const AdvertisingDashboard = () => {
                     {(() => {
                       const perf = channelPerformance;
                       const sorted = [...selectedChannels].sort((a, b) => 
-                        perf[b].conversions - perf[a].conversions
+                        (perf[b]?.conversions || 0) - (perf[a]?.conversions || 0)
                       );
-                      return `${mediaChannels[sorted[0]].name} - ${(perf[sorted[0]].conversions * 100).toFixed(2)}% conversion rate`;
+                      return `${mediaChannels[sorted[0]]?.name || sorted[0]} - ${((perf[sorted[0]]?.conversions || 0.1) * 100).toFixed(2)}% conversion rate`;
                     })()}
                   </p>
                   <p className="text-xs text-gray-600 mt-1">Highest percentage of audience taking desired action</p>
@@ -893,9 +976,9 @@ const AdvertisingDashboard = () => {
                   <p className="text-sm">
                     {(() => {
                       const sorted = [...selectedChannels].sort((a, b) => 
-                        audiences[selectedAudience].mediaUsage[b] - audiences[selectedAudience].mediaUsage[a]
+                        (audiences[selectedAudience]?.mediaUsage?.[b] || 0) - (audiences[selectedAudience]?.mediaUsage?.[a] || 0)
                       );
-                      return `${mediaChannels[sorted[0]].name} - ${audiences[selectedAudience].mediaUsage[sorted[0]]}% usage`;
+                      return `${mediaChannels[sorted[0]]?.name || sorted[0]} - ${audiences[selectedAudience]?.mediaUsage?.[sorted[0]] || 0}% usage`;
                     })()}
                   </p>
                   <p className="text-xs text-gray-600 mt-1">Channel with highest engagement from target audience</p>
@@ -908,10 +991,10 @@ const AdvertisingDashboard = () => {
                 {selectedChannels.slice(0, 3).map((channel, index) => (
                   <div key={channel} className="bg-gradient-to-r from-gray-100 to-gray-50 p-4 rounded-xl hover-scale shadow-elegant">
                     <div className="font-bold text-gray-800 mb-1">
-                      <span className="text-2xl gradient-text mr-2">{index + 1}.</span> {mediaChannels[channel].name} Strategy
+                      <span className="text-2xl gradient-text mr-2">{index + 1}.</span> {mediaChannels[channel]?.name || channel} Strategy
                     </div>
                     <p className="text-xs text-gray-600">
-                      Leverage {channelPerformance[channel].brandRecall}% recall rate with targeted messaging
+                      Leverage {channelPerformance[channel]?.brandRecall || 60}% recall rate with targeted messaging
                     </p>
                   </div>
                 ))}
@@ -928,14 +1011,14 @@ const AdvertisingDashboard = () => {
               <div className="hover-scale">
                 <h4 className="text-lg font-bold mb-2">Audience Coverage</h4>
                 <div className="text-4xl font-bold">
-                  {Math.max(...selectedChannels.map(c => mediaChannels[c].reach))}%
+                  {Math.max(...selectedChannels.map(c => mediaChannels[c]?.reach || 60))}%
                 </div>
                 <div className="text-sm opacity-90">Maximum Reach</div>
               </div>
               <div className="hover-scale">
                 <h4 className="text-lg font-bold mb-2">Efficiency Score</h4>
                 <div className="text-4xl font-bold">
-                  {(selectedChannels.reduce((acc, c) => acc + channelPerformance[c].conversions * 100, 0) / selectedChannels.length).toFixed(1)}
+                  {(selectedChannels.reduce((acc, c) => acc + (channelPerformance[c]?.conversions || 0.1) * 100, 0) / selectedChannels.length).toFixed(1)}
                 </div>
                 <div className="text-sm opacity-90">Avg Conversion %</div>
               </div>
@@ -1023,7 +1106,7 @@ const AdvertisingDashboard = () => {
           </div>
           
           <div className="mt-6 text-center text-xs text-gray-500">
-            <p><strong>Note:</strong> This dashboard uses publicly available industry benchmarks. For campaign-specific data, integrate your own analytics.</p>
+            <p><strong>Note:</strong> {apiData ? 'This dashboard uses live data from your API.' : 'This dashboard uses demo data.'} For campaign-specific data, integrate your own analytics.</p>
             <p className="mt-1">To maintain accuracy, update benchmark data quarterly from the sources listed above.</p>
           </div>
         </div>
@@ -1070,6 +1153,15 @@ const AdvertisingDashboard = () => {
     });
     setCurrentSlide(0);
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen flex items-center justify-center">
+        <div className="text-white text-xl">Loading dashboard...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-8 min-h-screen flex flex-col items-center justify-center">
@@ -1210,7 +1302,7 @@ const AdvertisingDashboard = () => {
           
           <div className="mt-6 flex justify-between items-center">
             <p className="text-xs text-gray-500">
-              Data sourced from free public benchmarks - see final slide for sources
+              {apiData ? 'Connected to live data API' : 'Using demo data'} - see final slide for sources
             </p>
             <button
               onClick={() => setIsConfigOpen(false)}
@@ -1293,11 +1385,11 @@ const AdvertisingDashboard = () => {
         {/* Footer with enhanced styling */}
         <div className="px-6 py-3 text-xs text-gray-500 bg-gradient-to-t from-gray-100 to-gray-50 border-t">
           <p>
-            <span className="font-semibold">Planning Parameters:</span> {industries[selectedIndustry].name} • {audiences[selectedAudience].name} • 
+            <span className="font-semibold">Planning Parameters:</span> {industries[selectedIndustry]?.name || 'N/A'} • {audiences[selectedAudience]?.name || 'N/A'} • 
             {selectedChannels.length} Channel{selectedChannels.length > 1 ? 's' : ''} • 
             {selectedKPIs.length} KPI{selectedKPIs.length > 1 ? 's' : ''}
           </p>
-          <p className="text-gray-400 mt-1">Agency Planning Mode • Industry Benchmarks from Free Sources</p>
+          <p className="text-gray-400 mt-1">Agency Planning Mode • {apiData ? 'Live Data' : 'Demo Mode'}</p>
         </div>
       </div>
     </div>
